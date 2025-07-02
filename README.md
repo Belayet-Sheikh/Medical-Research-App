@@ -4,6 +4,16 @@ This is an AI-powered web application built with Streamlit and Google Gemini tha
 
 ![App Screenshot](https://i.imgur.com/tyIoh1g.png)
 
+---
+
+## 🚀 Live Application
+
+**You can view and interact with the live application here:**
+
+[**https://your-app-name.streamlit.app**](https://your-app-name.streamlit.app)
+
+---
+
 ## Features
 
 - **AI-Powered Summarization:** Generates a concise summary of the content from up to three article URLs.
