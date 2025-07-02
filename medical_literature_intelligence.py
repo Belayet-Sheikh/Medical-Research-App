@@ -166,28 +166,28 @@ Original file is located at
 # else:
 #     st.info("Enter article URLs in the sidebar and click 'Analyze Articles' to begin.")
 
-# Cell 3:
-from pyngrok import ngrok
-from google.colab import userdata
-import os
+## Cell 3:
+#from pyngrok import ngrok
+#from google.colab import userdata
+#import os
 
 # Get secrets from Colab
-try:
-    NGROK_AUTHTOKEN = userdata.get('NGROK_AUTHTOKEN')
-    GOOGLE_API_KEY = userdata.get('GOOGLE_API_KEY')
-except Exception as e:
-    print(f"ERROR: Failed to get key. Please double check them. Error: {e}")
-else:
-    # Setting ngrok authtoken
-    ngrok.set_auth_token(NGROK_AUTHTOKEN)
+#try:
+  #  NGROK_AUTHTOKEN = userdata.get('NGROK_AUTHTOKEN')
+    #GOOGLE_API_KEY = userdata.get('GOOGLE_API_KEY')
+#except Exception as e:
+   # print(f"ERROR: Failed to get key. Please double check them. Error: {e}")
+#else:
+   # # Setting ngrok authtoken
+   # ngrok.set_auth_token(NGROK_AUTHTOKEN)
 
     # Terminate any existing ngrok tunnels
-    ngrok.kill()
+    #ngrok.kill()
 
     # Create the public URL
-    public_url = ngrok.connect(8501)
-    print("App is live!")
-    print(f"🔗 Public URL: {public_url}")
+   # public_url = ngrok.connect(8501)
+   # print("App is live!")
+   # print(f"🔗 Public URL: {public_url}")
 
     # Set the GOOGLE_API_KEY as an environment variable for the streamlit command
-    !GOOGLE_API_KEY={GOOGLE_API_KEY} streamlit run app.py --server.port 8501
+    #!GOOGLE_API_KEY={GOOGLE_API_KEY} streamlit run app.py --server.port 8501
