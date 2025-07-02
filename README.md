@@ -2,7 +2,7 @@
 
 This is an AI-powered web application built with Streamlit and Google Gemini that allows users to analyze and query online medical articles.
 
-![App Screenshot][img]https://i.imgur.com/tyIoh1g.png[/img]
+![App Screenshot](https://i.imgur.com/tyIoh1g.png)
 
 ## Features
 
