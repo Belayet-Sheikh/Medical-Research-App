@@ -7,7 +7,7 @@ Original file is located at
     https://colab.research.google.com/drive/1MGmjshMKgdR8ItrjyrTzOVUmg2NZwpSw
 """
 
-!pip install streamlit langchain langchain-community langchain-google-genai faiss-cpu beautifulsoup4 lxml pyngrok google-ai-generativelanguage==0.6.15 --quiet
+#!pip install streamlit langchain langchain-community langchain-google-genai faiss-cpu beautifulsoup4 lxml pyngrok google-ai-generativelanguage==0.6.15 --quiet
 
 # Commented out IPython magic to ensure Python compatibility.
 # %%writefile app.py
