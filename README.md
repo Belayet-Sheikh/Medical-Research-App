@@ -10,7 +10,7 @@ This is an AI-powered web application built with Streamlit and Google Gemini tha
 
 **You can view and interact with the live application here:**
 
-[**https://your-app-name.streamlit.app**](https://your-app-name.streamlit.app)
+[**https://your-app-name.streamlit.app**]([https://your-app-name.streamlit.app](https://medical-research-app.streamlit.app/))
 
 ---
 
