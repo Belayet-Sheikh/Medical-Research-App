@@ -1,10 +1,12 @@
-# 1. REQUIRED IMPORTS
+# Medical Literature Analysis App with Google Gemini
+# Streamlit application for analyzing medical articles
+
 import os
 import streamlit as st
 import asyncio
 from functools import wraps
 
-# LangChain and Google specific imports
+# LangChain and Google AI imports
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_community.document_loaders import WebBaseLoader
@@ -14,17 +16,18 @@ from langchain.chains.summarize import load_summarize_chain
 
 # Async helper function
 def run_async(func):
+    """Decorator to run async functions in a sync context."""
     @wraps(func)
     def wrapper(*args, **kwargs):
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
         try:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
             return loop.run_until_complete(func(*args, **kwargs))
         finally:
             loop.close()
     return wrapper
 
-# 2. PAGE CONFIGURATION AND STYLING
+# --- App Configuration ---
 st.set_page_config(
     page_title="Medical Literature Analysis",
     page_icon="🩺",
@@ -59,7 +62,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# 3. INITIALIZING API KEY AND MODEL 
+# --- Model Initialization ---
 @st.cache_resource
 def load_models():
     if 'GOOGLE_API_KEY' not in os.environ:
@@ -81,7 +84,7 @@ def load_models():
 
 llm, embeddings = load_models()
 
-# 4. STREAMLIT UI AND APPLICATION LOGIC
+# --- UI Components ---
 with st.sidebar:
     st.title("🩺 Analysis Engine")
     st.markdown("Enter the URLs of the medical articles you wish to analyze below.")
@@ -96,12 +99,13 @@ st.title("Medical Literature Intelligence")
 st.subheader("Your AI-Powered Research Assistant")
 st.divider()
 
-# Initialize session state
+# --- Session State Initialization ---
 if "processed" not in st.session_state:
     st.session_state.processed = False
     st.session_state.vector_store = None
     st.session_state.docs = None
 
+# --- Document Processing Function ---
 @run_async
 async def process_documents(urls):
     loader = WebBaseLoader(web_paths=urls)
@@ -111,6 +115,7 @@ async def process_documents(urls):
     vector_store = await FAISS.afrom_documents(texts, embedding=embeddings)
     return vector_store, docs
 
+# --- Main App Logic ---
 if process_button:
     urls = [url for url in [url1, url2, url3] if url.strip()]
     if not urls:
@@ -130,6 +135,7 @@ if process_button:
                 st.sidebar.error(f"An error occurred: {e}")
                 st.session_state.processed = False
 
+# --- Results Display ---
 if st.session_state.processed:
     st.header("Analysis Results", anchor=False)
 
