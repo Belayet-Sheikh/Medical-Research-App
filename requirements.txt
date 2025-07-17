@@ -5,3 +5,5 @@ langchain-google-genai
 faiss-cpu
 beautifulsoup4
 lxml
+nest-asyncio
+html2text
