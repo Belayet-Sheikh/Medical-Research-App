@@ -6,6 +6,10 @@ import streamlit as st
 import asyncio
 from functools import wraps
 
+# 1. ADD THIS: Import and apply nest_asyncio at the top
+import nest_asyncio
+nest_asyncio.apply()
+
 # LangChain and Google AI imports
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores import FAISS
@@ -14,18 +18,18 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chains import RetrievalQAWithSourcesChain
 from langchain.chains.summarize import load_summarize_chain
 
-# Async helper function
-def run_async(func):
-    """Decorator to run async functions in a sync context."""
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        try:
-            return loop.run_until_complete(func(*args, **kwargs))
-        finally:
-            loop.close()
-    return wrapper
+# 2. REMOVE THIS: The custom run_async decorator is no longer needed.
+# def run_async(func):
+#     """Decorator to run async functions in a sync context."""
+#     @wraps(func)
+#     def wrapper(*args, **kwargs):
+#         loop = asyncio.new_event_loop()
+#         asyncio.set_event_loop(loop)
+#         try:
+#             return loop.run_until_complete(func(*args, **kwargs))
+#         finally:
+#             loop.close()
+#     return wrapper
 
 # --- App Configuration ---
 st.set_page_config(
@@ -38,31 +42,17 @@ st.set_page_config(
 # Custom CSS
 st.markdown("""
 <style>
-    .main {
-        background-color: #f0f2f6;
-    }
-    .st-emotion-cache-16txtl3 {
-        background-color: #ffffff;
-    }
-    .stButton>button {
-        border-radius: 8px;
-        border: 1px solid #0068c9;
-        background-color: #0068c9;
-        color: white;
-    }
-    .stButton>button:hover {
-        background-color: #00509e;
-        color: white;
-        border: 1px solid #00509e;
-    }
-    .st-expander {
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-    }
+    /* Your CSS remains the same */
+    .main { background-color: #f0f2f6; }
+    .st-emotion-cache-16txtl3 { background-color: #ffffff; }
+    .stButton>button { border-radius: 8px; border: 1px solid #0068c9; background-color: #0068c9; color: white; }
+    .stButton>button:hover { background-color: #00509e; color: white; border: 1px solid #00509e; }
+    .st-expander { border: 1px solid #e0e0e0; border-radius: 8px; }
 </style>
 """, unsafe_allow_html=True)
 
 # --- Model Initialization ---
+# This function will now work correctly because nest_asyncio has patched the environment
 @st.cache_resource
 def load_models():
     if 'GOOGLE_API_KEY' not in os.environ:
@@ -79,6 +69,7 @@ def load_models():
         embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
         return llm, embeddings
     except Exception as e:
+        # The original error was happening here
         st.error(f"Error initializing models: {e}")
         st.stop()
 
@@ -106,10 +97,14 @@ if "processed" not in st.session_state:
     st.session_state.docs = None
 
 # --- Document Processing Function ---
-@run_async
+# 3. CHANGE THIS: Remove the @run_async decorator
 async def process_documents(urls):
+    """This remains an async function, but without the decorator."""
     loader = WebBaseLoader(web_paths=urls)
-    docs = loader.load()
+    # Using 'await' here because WebBaseLoader.load() is blocking I/O
+    # and LangChain provides an async version `aload` for better performance in async contexts.
+    # Let's switch to it for good practice.
+    docs = await loader.aload() 
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1500, chunk_overlap=200)
     texts = text_splitter.split_documents(docs)
     vector_store = await FAISS.afrom_documents(texts, embedding=embeddings)
@@ -123,7 +118,9 @@ if process_button:
     else:
         with st.spinner("Analyzing content... This may take a moment."):
             try:
-                vector_store, docs = process_documents(urls)
+                # 4. CHANGE THIS: Use asyncio.run() to execute the async function
+                vector_store, docs = asyncio.run(process_documents(urls))
+                
                 if not docs:
                     st.error("Could not extract any text from the provided URLs.")
                 else:
@@ -142,6 +139,8 @@ if st.session_state.processed:
     # Summary Section
     with st.expander("**Executive Summary of Articles**", expanded=True):
         with st.spinner("Generating summary..."):
+            # Note: chain.run is often synchronous. If an async version `arun` is available,
+            # you would wrap this in asyncio.run as well for consistency.
             summarize_chain = load_summarize_chain(llm, chain_type="map_reduce")
             summary = summarize_chain.run(st.session_state.docs)
             st.write(summary)
@@ -157,6 +156,7 @@ if st.session_state.processed:
                     chain_type="stuff", 
                     retriever=st.session_state.vector_store.as_retriever()
                 )
+                # The __call__ method for chains is often synchronous.
                 result = qa_chain({"question": query}, return_only_outputs=True)
                 
                 st.subheader("Answer", anchor=False)
